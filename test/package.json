@@ -1,0 +1,8 @@
+{
+  "name": "curriculum-tests",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.19.0",
+  "scripts": { "unit": "vitest run", "browser": "playwright test" },
+  "devDependencies": { "@playwright/test": "1.63.0", "vitest": "5.0.0" }
+}

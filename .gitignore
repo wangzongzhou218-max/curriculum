@@ -1,0 +1,9 @@
+.tools/
+.env
+.env.local
+node_modules/
+target/
+.nuxt/
+.output/
+test-results/
+playwright-report/

@@ -1,0 +1,22 @@
+{
+  "name": "curriculum-web",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.19.0",
+  "scripts": {
+    "dev": "nuxt dev --host localhost",
+    "build": "nuxt build",
+    "typecheck": "nuxt typecheck",
+    "preview": "node .output/server/index.mjs"
+  },
+  "dependencies": {
+    "nuxt": "4.5.2",
+    "vue": "3.5.42"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "prettier": "^3.9.6",
+    "typescript": "5.9.3",
+    "vue-tsc": "3.3.11"
+  }
+}
