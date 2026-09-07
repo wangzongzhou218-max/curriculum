@@ -74,7 +74,7 @@ test('registration omits a user-entered student or employee number', async ({ pa
     return route.fulfill({ status: 404, json: { error: { code: 'NOT_FOUND', message: 'not found' } } })
   })
   await page.goto('/register')
-  await expect(page.locator('input[name="registrationNumber"]')).toHaveCount(0)
+  await expect(page.getByLabel('学号', { exact: true })).toHaveCount(0)
   await page.locator('input[autocomplete="name"]').fill('Browser Student')
   await page.locator('input[autocomplete="email"]').fill('browser@example.edu')
   await page.locator('input[autocomplete="new-password"]').nth(0).fill('Password123')
@@ -83,4 +83,32 @@ test('registration omits a user-entered student or employee number', async ({ pa
   await expect(page.getByText('s0000123', { exact: true })).toBeVisible()
   expect(payload).toMatchObject({ role: 'STUDENT', name: 'Browser Student', email: 'browser@example.edu' })
   expect(payload).not.toHaveProperty('registrationNumber')
+})
+
+test('administrator edits account details without sending a registration number', async ({ page }) => {
+  const admin = { userId: '1', name: '管理员', account: 'admin', role: 'ADMIN', homePath: '/admin/accounts' }
+  const account = { id: '7', account: 's0000007', role: 'STUDENT', name: '编辑前', registrationNumber: 's0000007', email: 'before@example.edu', version: '3', createdAt: '2026-09-01T00:00:00Z', status: 'ACTIVE' }
+  let payload: Record<string, string> | undefined
+  await page.route('**/api/v1/**', async route => {
+    const request = route.request(), path = new URL(request.url()).pathname.replace('/api/v1', '')
+    if (path === '/auth/context') return route.fulfill({ json: { data: { ready: true } } })
+    if (path === '/auth/me') return route.fulfill({ json: { data: admin } })
+    if (path === '/semesters') return route.fulfill({ json: { data: { items: [semester], defaultSemesterId: '1' } } })
+    if (path === '/admin/accounts' && request.method() === 'GET') return route.fulfill({ json: { data: { items: [account], total: 1, page: 1, size: 20 } } })
+    if (path === '/admin/accounts/7' && request.method() === 'GET') return route.fulfill({ json: { data: account } })
+    if (path === '/admin/accounts/7' && request.method() === 'PATCH') {
+      payload = request.postDataJSON()
+      return route.fulfill({ json: { data: { ...account, ...payload, version: '4' } } })
+    }
+    throw new Error(`Unexpected API request: ${request.method()} ${path}`)
+  })
+  await page.goto('/admin/accounts')
+  await page.getByRole('button', { name: '编辑资料' }).click()
+  await expect(page.getByRole('dialog')).toBeVisible()
+  await expect(page.getByLabel('学号', { exact: true })).toHaveCount(0)
+  await page.getByLabel('姓名', { exact: true }).fill('编辑后')
+  await page.getByLabel('邮箱', { exact: true }).fill('after@example.edu')
+  await page.getByRole('button', { name: '保存资料' }).click()
+  await expect(page.getByRole('dialog')).not.toBeVisible()
+  expect(payload).toEqual({ name: '编辑后', email: 'after@example.edu' })
 })

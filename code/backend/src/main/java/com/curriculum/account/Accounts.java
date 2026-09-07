@@ -42,9 +42,9 @@ public class Accounts {
     }
     public Map<String, Object> edit(Identity.Actor actor, long id, Edit input, String version) {
         Account user = target(actor, id); active(user); Commands.version(user.version, version);
-        String name = Rules.text(input.name(), "姓名", 50), number = Rules.registration(input.registrationNumber()), email = Rules.email(input.email());
-        unique(id, user.role, number, email);
-        db.track(user); user.name = name; user.registrationNumber = number; user.emailNormalized = email; user.version++; user.updatedAt = db.now(); return view(user);
+        String name = Rules.text(input.name(), "姓名", 50), email = Rules.email(input.email());
+        uniqueEmail(id, email);
+        db.track(user); user.name = name; user.emailNormalized = email; user.version++; user.updatedAt = db.now(); return view(user);
     }
     public Map<String, Object> reset(Identity.Actor actor, long id, String hash, String version) {
         Account user = target(actor, id); active(user); Commands.version(user.version, version);
@@ -73,6 +73,10 @@ public class Accounts {
     private void unique(Long id, String role, String number, String email) {
         var found = db.list(Account.class, "from Account where (role=?1 and registrationNumber=?2) or emailNormalized=?3", role, number, email);
         Problem.require(found.stream().allMatch(a -> Objects.equals(a.id, id)), 409, "ACCOUNT_FIELD_UNAVAILABLE", "工号、学号或邮箱已被使用");
+    }
+    private void uniqueEmail(Long id, String email) {
+        var found = db.list(Account.class, "from Account where emailNormalized=?1", email);
+        Problem.require(found.stream().allMatch(a -> Objects.equals(a.id, id)), 409, "ACCOUNT_FIELD_UNAVAILABLE", "邮箱已被使用");
     }
     private void active(Account account) { Problem.require("ACTIVE".equals(account.status), 404, "RESOURCE_NOT_FOUND", "账号已删除"); }
     private void revoke(long id, Instant now) { db.list(AuthSession.class, "from AuthSession where userId=?1 and revokedAt is null", id).forEach(s -> s.revokedAt = now); }

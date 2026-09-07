@@ -74,7 +74,6 @@ async function save(data: {
         version: selected.value!.version,
         body: {
           name: data.name,
-          registrationNumber: data.registrationNumber!,
           email: data.email,
         },
       });
@@ -258,6 +257,7 @@ onBeforeUnmount(() => window.removeEventListener("data-refresh", load));
       :key="modal === 'edit' ? selected?.id : 'create'"
       v-if="modal === 'create' || modal === 'edit'"
       :account="modal === 'edit' ? selected : undefined"
+      :show-registration-number="modal === 'create'"
       :busy="locked"
       @submit="save"
     /><template v-else

@@ -73,7 +73,7 @@ public class Queries {
         result.put("course", courseView(course, snapshot, actor, true)); result.put("selectedCount", rows.size()); return result;
     }
     public Map<String, Object> students(Identity.Actor actor, long semesterId, String query, String selection, String courseId, int page, int size) {
-        identity.require(actor, "TEACHER"); String q = search(query);
+        identity.require(actor, "TEACHER"); String q = search(query).toLowerCase(Locale.ROOT);
         Problem.require(Set.of("ALL", "SELECTED", "NONE").contains(selection), 400, "VALIDATION_FAILED", "选课筛选无效");
         Snapshot snapshot = snapshot(semesterId);
         Long selectedCourseId = courseId == null || courseId.isBlank() ? null : Rules.id(courseId);
@@ -83,7 +83,7 @@ public class Queries {
         }
         var byStudent = snapshot.enrollments.stream().collect(Collectors.groupingBy(e -> e.studentId));
         var rows = snapshot.users.values().stream().filter(a -> "STUDENT".equals(a.role) && "ACTIVE".equals(a.status))
-            .filter(a -> a.name.contains(q) || a.account.startsWith(q))
+            .filter(a -> a.name.toLowerCase(Locale.ROOT).contains(q) || a.account.toLowerCase(Locale.ROOT).startsWith(q))
             .filter(a -> "ALL".equals(selection) || ("SELECTED".equals(selection) == byStudent.containsKey(a.id)))
             .filter(a -> selectedCourseId == null || byStudent.getOrDefault(a.id, List.of()).stream().anyMatch(e -> Objects.equals(e.courseId, selectedCourseId)))
             .sorted(Comparator.comparing(a -> a.account)).toList();

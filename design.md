@@ -256,7 +256,7 @@ enrollment.semester_id 是受复合外键保护的查询冗余，不是另一个
 | API-10 | GET /admin/accounts | role/q/page/size；仅师生资料分页 | AccountController → AccountQuery；P-12 |
 | API-11 | POST /admin/accounts | 与注册相同资料；201 师生账号 | AccountController → PasswordEncoder → Cmd(CreateAccount)；P-12 |
 | API-12 | GET /admin/accounts/{id} | 师生资料与 version；不可返回密码 | AccountController → AccountQuery.detail；P-12 |
-| API-13 | PATCH /admin/accounts/{id} | name/registrationNumber/email；200 新资料 | AccountController → Cmd(UpdateAccount) → AccountPolicy；P-12 |
+| API-13 | PATCH /admin/accounts/{id} | name/email；200 新资料；工号/学号保持不变 | AccountController → Cmd(UpdateAccount) → AccountPolicy；P-12 |
 | API-14 | POST /admin/accounts/{id}/password-reset | password/confirmPassword；200 新版本；旧会话失效 | AccountController → PasswordEncoder → Cmd(ResetPassword) → SessionService.revokeAll；P-12 |
 | API-15 | DELETE /admin/accounts/{id} | If-Match；200 删除结果和取消的当期选课数量 | AccountController → Cmd(DeleteAccount) → CoursePolicy / EnrollmentService → SessionService；P-18 |
 | API-16 | GET /teacher/courses | semesterId/page/size；本人未删除课程与人数 | TeacherCourseController → TeacherCourseQuery；P-06 |

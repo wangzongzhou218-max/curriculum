@@ -29,7 +29,7 @@ public class Store {
             if (!before.equals(after)) {
                 String type = entity instanceof Account ? "USER" : entity instanceof Course ? "COURSE" : "ENROLLMENT";
                 Long id = entity instanceof Account a ? a.id : entity instanceof Course c ? c.id : ((Enrollment) entity).id;
-                Long semester = entity instanceof Course c ? c.semesterId : entity instanceof Enrollment e ? e.semesterId : null;
+                Long semester = entity instanceof Course c ? Long.valueOf(c.semesterId) : entity instanceof Enrollment e ? Long.valueOf(e.semesterId) : null;
                 changes.add(new Change(type, id, semester, before, after));
             }
         }); return changes;

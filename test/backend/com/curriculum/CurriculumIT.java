@@ -88,4 +88,14 @@ class CurriculumIT {
         admin.post("/auth/logout", Map.of(), 200);
         admin.call("GET", "/auth/me", null, 401, null, null);
     }
+    @Test void administratorCanEditAnAccountWithoutSendingRegistrationNumber() throws Exception {
+        var admin = new Browser(); admin.login("admin", "admin");
+        var created = admin.post("/admin/accounts", Map.of("role", "STUDENT", "name", "编辑前", "registrationNumber", "S-EDIT-001",
+            "email", "before-edit@example.edu", "password", PASSWORD, "confirmPassword", PASSWORD), 201);
+        var updated = admin.call("PATCH", "/admin/accounts/" + created.get("id").asText(),
+            Map.of("name", "编辑后", "email", "after-edit@example.edu"), 200, null, created.get("version").asText()).get("data");
+        assertEquals("编辑后", updated.get("name").asText());
+        assertEquals("after-edit@example.edu", updated.get("email").asText());
+        assertEquals("S-EDIT-001", updated.get("registrationNumber").asText());
+    }
 }
